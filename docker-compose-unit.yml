@@ -1,0 +1,14 @@
+version: "3.4"
+
+services:
+  tests:
+    build:
+      context: .
+      target: tests
+      args:
+        - GH_USER
+        - GH_PKGS_TOKEN
+    entrypoint:
+      - dotnet
+      - test
+      - --filter=Type=Unit

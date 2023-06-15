@@ -1,0 +1,29 @@
+version: "3.4"
+
+services:
+  tests:
+    build:
+      context: .
+      target: tests
+      args:
+        - GH_USER
+        - GH_PKGS_TOKEN
+    environment:
+      - AWS:ServiceURL=http://bus:4566
+    depends_on:
+      - bus
+    entrypoint:
+      - dotnet
+      - test
+      - -c=Release
+      - --no-build
+      - --filter=Type=Integration
+      - --verbosity=normal
+  bus:
+    image: localstack/localstack:0.11.2
+    environment:
+      - DEBUG=1
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=ap-southeast-2
+    ports:
+      - "4566:4566"

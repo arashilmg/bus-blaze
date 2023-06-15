@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BizCover.Blaze.Infrastructure.Bus.Upgrade\BizCover.Blaze.Infrastructure.Bus.Upgrade.csproj" />
+    <ProjectReference Include="..\BizCover.Blaze.Infrastructure.Bus.Sample.Event\BizCover.Blaze.Infrastructure.Bus.Sample.Event.csproj" />
+  </ItemGroup>
+
+
+</Project>
