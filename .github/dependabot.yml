@@ -1,0 +1,21 @@
+version: 2
+registries:
+  nuget-feed-nuget-pkg-github-com-bizcover-index-json:
+    type: nuget-feed
+    url: https://nuget.pkg.github.com/bizcover/index.json
+    token: "${{secrets.NUGET_FEED_NUGET_PKG_GITHUB_COM_BIZCOVER_INDEX_JSON_TOKEN}}"
+
+updates:
+- package-ecosystem: nuget
+  directory: "/"
+  schedule:
+    interval: daily
+    time: "08:00"
+    timezone: Australia/Sydney
+  open-pull-requests-limit: 10
+  ignore:
+   - dependency-name: Microsoft.*
+        versions:
+          - ">6.0"
+  registries:
+    - nuget-feed-nuget-pkg-github-com-bizcover-index-json

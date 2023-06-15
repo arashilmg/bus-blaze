@@ -1,0 +1,60 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="RenewalStepTriggerDayConfig.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="CanAutoRenewProductConfig.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="$(PkgBizCover_Protos_Carts)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Carts)\content" GrpcServices="Client" />
+		<Protobuf Include="$(PkgBizCover_Protos_Offers)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Offers)\content" GrpcServices="Client" />
+		<Protobuf Include="$(PkgBizCover_Protos_Orders)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Orders)\content" GrpcServices="Client" />
+		<Protobuf Include="$(PkgBizCover_Protos_Policies)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Policies)\content" GrpcServices="Client"/>
+		<Protobuf Include="$(PkgBizCover_Protos_Payment)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Payment)\content" GrpcServices="Client" />
+		<Protobuf Include="$(PkgBizCover_Protos_Quotations)\content\*.proto" ProtoRoot="$(PkgBizCover_Protos_Quotations)\content" GrpcServices="Client" />		
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="BizCover.Blaze.Infrastructure.Grpc" Version="1.0.36" />
+		<PackageReference Include="BizCover.Protos.Carts" Version="1.2.1292" GeneratePathProperty="true"/>
+		<PackageReference Include="BizCover.Protos.Offers" Version="1.2.1359" GeneratePathProperty="true" />
+		<PackageReference Include="BizCover.Protos.Orders" Version="1.2.2393" GeneratePathProperty="true" />
+		<PackageReference Include="BizCover.Protos.Policies" Version="1.2.2315" GeneratePathProperty="true"  />
+		<PackageReference Include="BizCover.Protos.Payment" Version="1.2.2864" GeneratePathProperty="true" />		
+		<PackageReference Include="BizCover.Protos.Quotations" Version="1.2.885" GeneratePathProperty="true" />
+		<PackageReference Include="BizCover.Framework.Application" Version="1.2.5" />
+		<PackageReference Include="FluentValidation" Version="11.0.2" />
+		<PackageReference Include="BizCover.Framework.Time" Version="0.0.2" />
+		<PackageReference Include="Google.Api.CommonProtos" Version="2.6.0" />
+		<PackageReference Include="Google.Protobuf" Version="3.21.6" />
+		<PackageReference Include="Grpc.Core.Api" Version="2.48.0" />
+		<PackageReference Include="Grpc.Tools" Version="2.48.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\BizCover.Entity.Renewals\BizCover.Entity.Renewals.csproj" />
+		<ProjectReference Include="..\BizCover.Messages.Renewals\BizCover.Messages.Renewals.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="$(AssemblyName).Tests" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="UseCases\WordingChanges\WordingChangesConfig.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+</Project>

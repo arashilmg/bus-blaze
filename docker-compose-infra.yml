@@ -1,0 +1,27 @@
+version: '3.4'
+services:
+  localstack:
+    image: localstack/localstack:latest
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=ap-southeast-2
+      - HOSTNAME_EXTERNAL=localhost
+      - DEBUG=0
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - awslocal sqs list-queues
+          && awslocal sns list-topics
+          && awslocal sns list-subscriptions
+      interval: 5s
+      timeout: 10s
+      start_period: 10s
+
+  bizcover.renewals.mongo:
+    image: mongo:4.4
+    ports:
+      - 27017:27017

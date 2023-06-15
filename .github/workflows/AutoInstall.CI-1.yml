@@ -1,0 +1,160 @@
+# ---------------------------------------------------------------------------- #
+#           🚫✋ This Workflow is AutoInstalled - Don't edit manually          #
+# ---------------------------------------------------------------------------- #
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.github/AutoInstall/**'
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.github/AutoInstall/**'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version (default auto-gen)'
+        required: false
+        default: ''
+env:
+  DOCKER_REGISTRY: 198689915409.dkr.ecr.ap-southeast-2.amazonaws.com
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+  GH_PKGS_TOKEN: ${{ secrets.GH_PKGS_TOKEN }}
+  GH_USER: ${{ secrets.GH_USER }}@bizcover.com.au
+  SONAR_IMAGE: 198689915409.dkr.ecr.ap-southeast-2.amazonaws.com/devops.sonar-scanner
+  SONAR_HOST: http://sonarqube.au.npd.bizcover.io 
+  SONAR_KEY: ${{ secrets.SONAR_KEY }} 
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    outputs:
+      start_time: ${{ steps.start_time.outputs.timestamp }}
+    steps:
+      - id: start_time
+        name: log start time
+        run: echo "::set-output name=timestamp::`date +%s`"
+
+      - name: Checkout 
+        uses: actions/checkout@v2
+      - name: Get Bizcover Actions
+        uses: actions/checkout@v2
+        with:
+          repository: BizCover/BizCover.DevOps.Actions
+          token: ${{ secrets.GH_TOKEN }}
+          path: bizcover
+
+      - id: changed_files
+        continue-on-error: true
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: ./bizcover/actions/get-changed-files
+
+      - name: Config
+        run: CHANGED_FILES="${{ steps.changed_files.outputs.all }}" bizcover/scripts/build/config.sh
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build
+        if: env.NO_DIFF != 'true' 
+        run: bizcover/scripts/build/build.sh
+
+      - name: Test
+        if: env.NO_DIFF != 'true' 
+        run: bizcover/scripts/build/test.sh
+
+      - name: Export Image
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && env.NO_DIFF != 'true' 
+        run: mkdir Image; docker save $DOCKER_IMAGE:$DOCKER_IMAGE_TAG | gzip > Image/${DOCKER_IMAGE}_${DOCKER_IMAGE_TAG}.tar.gz
+
+      - name: Image Artifact
+        if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && env.NO_DIFF != 'true'
+        uses: actions/upload-artifact@main
+        with:
+          name: Image
+          path: Image
+          retention-days: 1
+
+#ENDOFBUILD
+  Release:
+    runs-on: bizcover-shared
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    needs: Build
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v2
+      - name: Get Bizcover Actions
+        uses: actions/checkout@v2
+        with:
+          repository: BizCover/BizCover.DevOps.Actions
+          token: ${{ secrets.GH_TOKEN }}
+          path: bizcover
+
+      - id: changed_files
+        continue-on-error: true
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: ./bizcover/actions/get-changed-files
+
+      - name: Config
+        run: CHANGED_FILES="${{ steps.changed_files.outputs.all }}" bizcover/scripts/build/config.sh
+        
+      - name: Download Image
+        if: env.NO_DIFF != 'true' 
+        uses: actions/download-artifact@v2
+        with:
+          name: Image
+          path: Image
+
+      - name: Push Image to ECR
+        run: bizcover/scripts/build/ecr-push.sh
+ 
+      - name: Calculate build time
+        id: build_time
+        run: |
+          diff=`echo "$(date +%s) - ${{ needs.Build.outputs.start_time }}" | bc`
+          diffm=`echo 🏗 $(echo $diff / 60 | bc)m $(echo $diff % 60 | bc)s`
+          echo "RELEASE_BUILD_TIME=$diffm" >> $GITHUB_ENV
+          echo "::set-output name=RELEASE_BUILD_TIME::$diffm"
+
+      - name: Pre Release
+        run: bizcover/scripts/build/pre-release.sh
+
+      - name: Release Tag
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: "${{ env.DOCKER_IMAGE_TAG }}"
+          release_name: "Release ${{ env.DOCKER_IMAGE_TAG }}"
+          body: |
+            Release building time: ${{ steps.build_time.outputs.RELEASE_BUILD_TIME }}
+
+      
+
+  Logs:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: Release
+    timeout-minutes: 5
+    steps:
+      - name: Get Bizcover Actions
+        uses: actions/checkout@v2
+        with:
+          repository: BizCover/BizCover.DevOps.Actions
+          token: ${{ secrets.GH_TOKEN }}
+          path: bizcover
+
+      - name: Trigger Log Collector
+        run: bizcover/scripts/common/log-collector.sh
+        env:
+          LOG_COLLECTOR_KEY: ${{ secrets.LOG_COLLECTOR_KEY }}

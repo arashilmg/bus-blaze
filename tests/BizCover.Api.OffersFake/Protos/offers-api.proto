@@ -1,0 +1,262 @@
+syntax = "proto3";
+
+package Offers;
+
+option csharp_namespace = "BizCover.Application.Offers";
+
+import "Protos/offers-dto.proto";
+import "Protos/google/protobuf/empty.proto";
+
+service OffersService {
+    // Create a an indicative offer
+    rpc GenerateIndicativeOffer (GenerateIndicativeOfferRequest) returns (GenerateIndicativeOfferResponse);
+
+    // Create a an indicative prorated offer
+    rpc GenerateIndicativeProRatedOfferForProduct (GenerateIndicativeProRatedOfferForProductRequest) returns (GenerateIndicativePorRatedOfferForProductResponse);
+
+    // Create a offer if offer is not exist.
+    // if offerId exist, service will throw a StatusCode.AlreadyExists gRPC Exception
+    // This endpoint can be used during New businessflow and Requote renewal
+    rpc GenerateOffer (GenerateOfferRequest) returns (GenerateOfferResponse);
+
+    // Create a offer if offer is not exist.
+    // if offerId exist, service will throw a StatusCode.AlreadyExists gRPC Exception
+    rpc GenerateOfferForAmendment (GenerateOfferForAmendmentRequest) returns (GenerateOfferForAmendmentResponse);
+
+    // Generate offer for renewal 
+    // if offerId exist, service will throw a StatusCode.AlreadyExists gRPC Exception
+    // This endpoint can be used during Auto/Express renewal and amemdnemt (Amendment yet not decided)
+    rpc GenerateOfferForRenewal (GenerateOfferForRenewalRequest) returns (GenerateOfferForRenewalResponse);
+
+    // Get a offer by offer Id
+    // if the offer is exist, return a offer
+    // if the offer is not exist, will throw a StatusCode.NotFound gRPC Exception
+    rpc GetOffer (GetOfferRequest) returns (GetOfferResponse);
+
+    // Get a offer by offer Id
+    // if the offer is exist, return a offer
+    // if the offer is not exist, will throw a StatusCode.NotFound gRPC Exception
+    rpc GetOfferWithQuestionText (GetOfferWithQuestionTextRequest) returns (GetOfferWithQuestionTextResponse);
+
+    // Set Contact to an offer
+    // if the offer is not exist, will throw a StatusCode.NotFound Exception
+    // if the contact is not exist, will throw a StatusCode.NotFound Exception
+    // if the offer is exist and contact is exist, will set the contact to an offer
+    rpc SetContact (SetContactRequest) returns (google.protobuf.Empty);
+
+    // Compare 2 offers parameters to see which one(s) are identical, updated, added or removed
+    // if one of the offer does not exist then will return OFFER_NOT_FOUND
+    // if the offers are not for the same product type then will return INVALID_OFFERS
+    rpc CompareOffersParameters(CompareOffersParametersRequest) returns (CompareOffersParametersResponse);
+}
+
+/* Examples
+    GenerateOffer
+    {
+        "OfferId": "d33eee92-1a6b-43d7-8b4a-d986badc8e82",
+        "ParameterSets": [
+            {
+                "ProductTypeCode": "PA",
+                "Parameters": {
+                  "InceptionDate": "01/01/2020",
+                  "ExpirationDate": "01/01/2021",
+                  "IndustryCode": "ALLIED_HEALTH",
+                  "OccupationCode": "MASSAGE_THERAPY_SERVICE",
+                  "Revenue": "100000",
+                  "PostCode": "2000",
+                  "StateCode": "NSW",
+                  "CountryCode": "AU",
+                  "NoOfEmployees": "1",
+                  "SicknessCover": "True",
+                  "DeathCover": "100000",
+                  "WeeklyBenefit": "1000",
+                  "ExcessDays": "28",
+                  "HasVariousIssuesInPast10YearsFalse": "False",
+                  "HasPaClaimsExceed3000OverPast5YearsFalse": "False",
+                  "DateOfBirth": "13/08/1977",
+                  "PersonalAccidentCurrentCoverInForce": "False"
+                }
+            },
+            {
+                "ProductTypeCode": "PI-PL",
+                "Parameters": {
+                    "InceptionDate": "01/01/2020",
+                    "ExpirationDate": "01/01/2021",
+                    "IndustryCode": "ALLIED_HEALTH",
+                    "OccupationCode": "MASSAGE_THERAPY_SERVICE",
+                    "Revenue": "100000",
+                    "PostCode": "2000",
+                    "StateCode": "NSW",
+                    "CountryCode": "AU",
+                    "NoOfEmployees": "1",
+                    "PublicLiabilityCover": "10000000",
+                    "ProfessionalIndemnityCover": "1000000",
+                    "ProfessionalIndemnityCurrentCoverInForce": "False",
+                    "ClaimsCount": "0",
+                    "ClaimsAmount": "0",
+                    "PrescriptionDrugs": "False",
+                    "MedicalPractitionerTreatments": "False",
+                    "AppropriatelyQualifiedTrained": "True",
+                    "AwareCircumstancesResultClaim": "False",
+                    "HasVariousIssuesInPast10Years": "False"
+                }
+            }
+        ]
+    }
+
+    GetOffer {
+        "OfferId": "d33eee92-1a6b-43d7-8b4a-d986badc8e82"
+    }
+*/
+
+// Request and Response models
+// GenerateOffer
+message GenerateOfferRequest {
+    string OfferId = 1;
+    repeated ParameterSet ParameterSets = 2;                               
+    .Offers.OfferType OfferType = 3; //                                   <--- New Field
+    string ExpiringPolicyId = 4; // This can be null if OfferType is New  <--- New Field
+    string ContactId = 5; // optional field                               <--- New Field
+}  
+message GenerateOfferResponse {
+    OfferDto Offer = 1;
+}
+
+message GenerateOfferForAmendmentRequest {
+    string OfferId = 1;
+    repeated ParameterSet ParameterSets = 2;
+    string ProductCode = 3;
+    string PreviousQuotationId = 4;
+    string ProductTypeCode = 5;
+}
+
+message GenerateOfferForAmendmentResponse {
+    OfferDto Offer = 1;
+}
+
+message GenerateOfferForRenewalRequest {
+    string OfferId = 1;
+    string ProductCode = 2;
+    map<string, string> Parameters = 3;
+    // this has to be removed.
+    string PreviousQuotationId = 4;
+    string ExpiringPolicyId = 5;
+    .Offers.OfferType OfferType = 6;
+    string ContactId = 7; // optional field
+}
+
+message GenerateOfferForRenewalResponse {
+    OfferDto Offer = 1;
+}
+
+// Generate Indicative Offer
+message GenerateIndicativeOfferRequest {
+    repeated ParameterSet ParameterSets = 1;
+}
+
+message GenerateIndicativeOfferResponse {
+    IndicativeOfferDto IndicativeOffer = 1;
+}
+
+message GenerateIndicativeProRatedOfferForProductRequest {
+    repeated ParameterSet ParameterSets = 1;
+     string ProductCode = 2;
+    string ProductTypeCode = 3;
+    string PreviousQuotationId = 4;
+}
+
+message GenerateIndicativePorRatedOfferForProductResponse {
+    IndicativeOfferDto IndicativeOffer = 1;
+}
+
+// GetOffer
+message GetOfferRequest{
+    string OfferId = 1;
+}
+
+message GetOfferResponse {
+    OfferDto Offer = 1;
+}
+
+message GetOfferWithQuestionTextRequest{
+    string OfferId = 1;
+}
+
+message GetOfferWithQuestionTextResponse {
+    OfferDto Offer = 1;
+}
+
+// SetContact
+message SetContactRequest{
+    string OfferId = 1;
+    string ContactId = 2;
+}
+
+message CompareOffersParametersRequest {
+    string ProductTypeCode = 1;
+    //offer id considered as the reference for the comparison
+    string ReferenceOfferId = 2;
+    //offer id that will be compared to the ReferenceOfferId
+    string OtherOfferId = 3;
+}
+
+/*
+CompareOffersParameters example
+{
+  "Response": {
+    "Parameters": [
+      {
+        "Code": "InceptionDate",
+        "Comparison": {
+          "Offers": [
+            {
+              "OfferId": "cd3d54e6-d58b-4d9d-b137-01c1595dbb26",
+              "Value": "01/01/2020"
+            },
+            {
+              "OfferId": "531e407c-ec88-4072-af47-031d6c36dcb9",
+              "Value": "01/01/2020"
+            }
+          ],
+          "Status": "IDENTICAL"
+        }
+      },
+      {
+        "Code": "NoOfEmployees",
+        "Comparison": {
+          "Offers": [
+            {
+              "OfferId": "531e407c-ec88-4072-af47-031d6c36dcb9",
+              "Value": "1"
+            }
+          ],
+          "Status": "ADDED"
+        }
+      }
+    ]
+  },
+  "Result": "Response"
+}
+
+or
+
+{
+  "Error": {
+    "Code": "OFFER_NOT_FOUND",
+    "Message": "The offer CD3D54E6-D58B-4D9D-B137-01C1595DBB25 is not found"
+  },
+  "Result": "Error"
+}
+*/
+
+message CompareOffersParametersResponse {
+    oneof Result {
+        ErrorResponse Error = 1;
+        ComparisonParametersDto Response = 2;
+    }
+}
+
+message ErrorResponse {
+    string Code = 1;
+    string Message = 2;
+}

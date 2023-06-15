@@ -2,13 +2,19 @@ version: "3.4"
 
 services:
   tests:
+    image: bizcover.api.renewals.unit-tests
     build:
       context: .
       target: tests
       args:
-        - GH_USER
-        - GH_PKGS_TOKEN
+      - GH_USER
+      - GH_PKGS_TOKEN
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
     entrypoint:
       - dotnet
       - test
+      - -c=Release
+      - --no-build
       - --filter=Type=Unit
+      - --verbosity=normal

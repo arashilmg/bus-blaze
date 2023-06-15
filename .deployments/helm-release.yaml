@@ -1,0 +1,14 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: bizcover-app-grpc
+  annotations:
+    appName: renewals
+spec:
+  values:
+    hasLogs: true
+    image:
+      repository: 198689915409.dkr.ecr.ap-southeast-2.amazonaws.com/bizcover.api.renewals
+      tag: latest
+    labels: 
+      logs-index: k8s-apps-blaze

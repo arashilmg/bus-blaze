@@ -1,0 +1,96 @@
+syntax = "proto3";
+
+package Policies;
+
+option csharp_namespace = "BizCover.Application.Policies";
+
+import "Protos/policies-dto.proto";
+import "Protos/google/protobuf/timestamp.proto";
+
+service PoliciesService {
+    rpc GetPolicy (GetPolicyRequest) returns (GetPolicyResponse);    
+    rpc FindPolicies (FindPoliciesRequest) returns (FindPoliciesResponse);
+    rpc BindPolicy (BindPolicyRequest) returns (BindPolicyResponse);
+    //Returns the date range allowed for amending a Policy. E.g. 28/09/2021T11:04:45 to 28/11/2021T11:04:45
+    //The time is returned in case utc needs to be converted to local
+    //If the policy is not found returns StatusCode.NotFound: POLICY_NOT_FOUND
+    rpc GetAllowedAmendmentEffectiveDates(GetAllowedAmendmentEffectiveDatesRequest) returns (GetAllowedAmendmentEffectiveDatesResponse);
+
+    //Returns past and future versions of the policy (original policy & amendments)
+    rpc GetAmendmentPolicyVersions(GetAmendmentPolicyVersionsRequest) returns (GetAmendmentPolicyVersionsResponse);
+
+    //Returns the list of all policy Ids. Used for data migration purposes.
+    rpc GetPoliciesByOffset(GetPoliciesByOffsetRequest) returns (GetPoliciesByOffsetResponse);
+
+    //Returns primary occupation of policy
+    rpc GetPolicyPrimaryOccupation(GetPolicyPrimaryOccupationRequest) returns (GetPolicyPrimaryOccupationResponse);
+}	
+
+message GetPolicyPrimaryOccupationRequest {
+	string PolicyId = 1;
+}
+
+message GetPolicyPrimaryOccupationResponse {
+	string Code = 1;
+    string Name = 2;
+}
+
+message GetPolicyRequest {
+    string PolicyId = 1;
+}
+
+message GetPolicyResponse {
+    PolicyDto Policy = 1;
+}
+
+// Supports three means of finding policies
+// Find by QuotationId
+// Find by OrderId
+// Find by Inception date range
+// Find all
+message FindPoliciesRequest {
+    string QuotationId = 1;
+    string OrderId = 2;
+    google.protobuf.Timestamp InceptionDateFrom = 3;
+    google.protobuf.Timestamp InceptionDateTo = 4;
+}
+
+message FindPoliciesResponse {
+    repeated PolicyDto Policies = 1;
+}
+
+message GetAllowedAmendmentEffectiveDatesRequest {
+}
+
+message GetAllowedAmendmentEffectiveDatesResponse {
+    google.protobuf.Timestamp FromUtc = 1;
+    google.protobuf.Timestamp ToUtc = 2;
+}
+
+message GetAmendmentPolicyVersionsRequest {
+    string PolicyId = 1;
+}
+
+message GetAmendmentPolicyVersionsResponse {
+    repeated PolicyDto Versions = 1;
+}
+
+message BindPolicyRequest {
+    string QuotationId = 1;
+    string OfferId = 2;
+    string PolicyId = 3;
+
+}
+
+message BindPolicyResponse {
+    string PolicyId = 1;
+}
+
+message GetPoliciesByOffsetRequest { 
+    int32 offset = 1;
+    int32 fetch = 2;
+}
+
+message GetPoliciesByOffsetResponse {
+	repeated PolicyDto Policies = 1;
+}

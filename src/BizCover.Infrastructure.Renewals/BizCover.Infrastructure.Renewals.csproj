@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BizCover.Blaze.Infrastructure.Bus" Version="1.0.128" />
+    <PackageReference Include="BizCover.Blaze.MultiTenancy.Extensions.DependencyInjection" Version="1.0.12" />
+    <PackageReference Include="BizCover.Blaze.MultiTenancy.GrpcInterceptors" Version="1.0.12" />
+    <PackageReference Include="BizCover.Framework.Persistence.Mongo" Version="1.1.0.8" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BizCover.Application.Renewals\BizCover.Application.Renewals.csproj" />
+    <ProjectReference Include="..\BizCover.Consumer.Renewals\BizCover.Consumer.Renewals.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package Diagnostics;
+
+option csharp_namespace = "BizCover.Application.Diagnostics";
+
+service DiagnosticsService {
+    rpc Ping (PingRequest) returns (PingResponse);
+}
+message PingRequest{
+
+}
+message PingResponse{
+
+}

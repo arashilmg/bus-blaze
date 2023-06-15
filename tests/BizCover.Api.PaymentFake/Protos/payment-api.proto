@@ -1,0 +1,252 @@
+syntax = "proto3";
+
+package Payment;
+
+option csharp_namespace = "BizCover.gRPC.Payment";
+
+import "Protos/google/protobuf/empty.proto";
+import "Protos/google/protobuf/timestamp.proto";
+import "Protos/google/type/money.proto";
+
+import "Protos/payment-dto.proto";
+
+service  PaymentService {
+
+    // Creates a pending payment for an order with a payment token or chargify payment profile
+    // Client can create pending payment either by payment token (New card) or chargify payment profile (Existing card)
+    // if payment already exist, service will throw a StatusCode.AlreadyExists gRPC Exception
+    // when the pending payment created and it will be persisted
+    rpc CreatePendingPayment (CreatePendingPaymentRequest) returns (google.protobuf.Empty);
+
+    // Update a payment token if payment status is declined
+    // if payment not exist, service will throw a StatusCode.NotFound gRPC Exception
+    // if payment is not in declined status, service will throw a Exception
+    // when the payment token updated and it will be persisted
+    rpc UpdatePaymentTokenOnDeclinedPayment (UpdatePaymentTokenOnDeclinedPaymentRequest) returns (google.protobuf.Empty);
+
+    // Get a payment detail by payment id
+    // if payment not exist, service will throw a StatusCode.NotFound gRPC Exception
+    // if payment is exist, service will return payment detail
+    rpc GetPaymentByPaymentId (GetPaymentByPaymentIdRequest) returns (GetPaymentByPaymentIdResponse);
+
+    // Gets the tax invoices by a policy id
+    rpc GetInvoicesByPolicy (GetInvoicesByPolicyRequest) returns (stream GetInvoicesByPolicyResponse);
+    
+    // Gets the tax invoices by a policy id v2
+    rpc GetInvoicesByPolicyV2 (GetInvoicesByPolicyRequest) returns (stream GetInvoicesByPolicyResponse);
+
+    // Creates a pending payment for an order with bank details for direct debit
+    // if payment already exist, service will throw a StatusCode.AlreadyExists gRPC Exception
+    // when the pending payment created and it will be persisted
+    rpc CreateDirectDebitPendingPayment (CreateDirectDebitPendingPaymentRequest) returns (google.protobuf.Empty);
+
+    // Gets the latest paid invoices by policy id
+    rpc GetLatestPaidInvoiceByPolicyId (GetLatestPaidInvoiceByPolicyIdRequest) returns (GetLatestPaidInvoiceByPolicyIdResponse);
+
+    // Gets a list of subscriptions for a given customer
+    // Each subscription includes balance , status and also payment information depending on payment method
+    // (only CC is supported atm but can be extended)
+    rpc GetSubscriptionsByChargifyCustomerId (GetSubscriptionsByChargifyCustomerIdRequest) returns (GetSubscriptionsByChargifyCustomerIdResponse);
+
+    //Get the list of past, current and future installments for a policy
+    //Throws NotFound is the subscription is not found
+    //Throws NotFound if no invoices are found
+    //Throws FailedPrecondition if policy is not monthly
+    rpc GetPaymentScheduleByPolicyId (GetPaymentScheduleByPolicyIdRequest) returns (GetPaymentScheduleByPolicyIdResponse);
+
+    // Add a new credit card and change default payment profile to newly added credit card
+    // if AddCreditCard failed, it can return following error code
+    // SUBSCRIPTION_NOT_FOUND
+    // CREATE_PAYMENT_PROFILE_FAILED
+    // CHANGE_DEFAULT_PAYMENT_PROFILE_FAILED
+    rpc AddCreditCard (AddCreditCardRequest) returns (AddCreditCardResponse);
+
+    // Update credit card expiry month and year, if there is an arrears then retry the payment with arrears amount
+    // if policy not found, service will throw a StatusCode.NotFound gRPC Exception
+    // if payment profile not found, service will throw a StatusCode.NotFound gRPC Exception
+    // if subscription not found, service will throw a StatusCode.NotFound gRPC Exception
+    // if credit card expiry update failed,rpc service will throw a StatusCode.FailedPrecondition gRPC Exception
+    // if arrears retry payment failed,rpc service will throw a StatusCode.FailedPrecondition gRPC Exception
+    rpc UpdateCreditCardExpiryAndRetry (UpdateCreditCardExpiryAndRetryRequest) returns (google.protobuf.Empty);
+    
+    // Retry the payment if policy is in arrears
+    // if retry payment failed, it will return following possible error codes
+    // StatusCode.NotFound: SUBSCRIPTION_NOT_FOUND
+    // StatusCode.FailedPrecondition: ARREARS_PAYMENT_FAILED
+    rpc RetryPayment (RetryPaymentRequest) returns (google.protobuf.Empty);    
+   
+    rpc GetSubscriptionByPolicyId (GetSubscriptionByPolicyIdRequest) returns (GetSubscriptionByPolicyIdResponse);
+
+    rpc GetMonthlyLumpSum (GetMonthlyLumpSumRequest) returns (GetMonthlyLumpSumResponse);
+
+    rpc PayLumpSum (PayLumpSumRequest) returns (PayLumpSumResponse);
+
+    // Get the arrears breakdown by LineItems for policy
+    // following are possible error codes
+    // StatusCode.NotFound: SUBSCRIPTION_NOT_FOUND
+    // StatusCode.NotFound: INVOICE_NOT_FOUND
+    rpc GetArrearsBreakdownByPolicyId (GetArrearsBreakdownByPolicyIdRequest) returns (GetArrearsBreakdownByPolicyIdResponse);
+    
+}
+
+message CreatePendingPaymentRequest {
+    string PaymentId = 1;
+    string OrderId = 2;
+    string PaymentToken = 3;
+    string ChargifyPaymentProfileId = 4;
+}
+
+message RetryPaymentRequest {
+    string PolicyId = 1;    
+}
+
+message CreateDirectDebitPendingPaymentRequest {
+    string PaymentId = 1;
+    string OrderId = 2;
+    string BankAccountNumber = 3;
+    string BankStateBranch = 4;
+}
+
+message UpdatePaymentTokenOnDeclinedPaymentRequest {
+    string PaymentId = 1;
+    string PaymentToken = 2;
+}
+
+message GetInvoicesByPolicyRequest {
+    string PolicyId = 1;
+    string Status = 2;
+}
+
+message GetPaymentByPaymentIdRequest {
+    string PaymentId = 1;
+}
+
+message GetPaymentByPaymentIdResponse {
+    PaymentDto paymentDetail = 1;
+}
+
+message GetInvoicesByPolicyResponse {
+    message InvoiceLineItem {
+        google.type.Money Amount = 1;
+        string LineItemType = 2;
+    }
+    string InvoiceNumber = 1;
+    google.protobuf.Timestamp InvoiceDate = 2;
+    google.type.Money TotalAmount = 3;
+    google.type.Money TotalGst = 4;
+    repeated InvoiceLineItem LineItems = 5;
+}
+
+message GetLatestPaidInvoiceByPolicyIdRequest {
+    string PolicyId = 1;
+}
+
+message GetLatestPaidInvoiceByPolicyIdResponse {
+    message InvoiceLineItem {
+        google.type.Money Amount = 1;
+        string LineItemType = 2;
+    }
+    google.type.Money TotalAmount = 3;
+    google.type.Money TotalGst = 4;
+    repeated InvoiceLineItem LineItems = 5;
+}
+
+message GetSubscriptionsByChargifyCustomerIdRequest {
+    string ChargifyCustomerId = 1;
+}
+
+message GetSubscriptionsByChargifyCustomerIdResponse {
+    repeated SubscriptionDto Subscriptions = 1;
+}
+
+message GetPaymentScheduleByPolicyIdRequest {
+    string PolicyId = 1;
+}
+
+message GetPaymentScheduleByPolicyIdResponse {
+    string PolicyId = 1;
+    google.type.Money TotalAmountPayableIncludingGST = 3;
+    google.type.Money TotalAmountPayableGST = 4;
+    google.type.Money TotalAmountPaidIncludingGST = 5;
+    google.type.Money TotalAmountPaidGST = 6;
+    google.type.Money TotalAmountLeftToPayIncludingGST = 7;
+    google.type.Money TotalAmountLeftToPayPaidGST = 8;
+    google.type.Money InstalmentAmountIncludingGST = 9;
+    google.type.Money InstalmentAmountGST = 10;
+    int32 OriginalNumberOfInstalments = 11;
+    repeated GetPaymentScheduleByPolicyIdInstalmentResponse Instalments = 12;
+    string PaymentMethod = 13;
+
+    message GetPaymentScheduleByPolicyIdInstalmentResponse {
+        int32 InstalmentNumber = 1;
+        string InstalmentStatus = 2;
+        google.protobuf.Timestamp PaymentDate = 3;
+        google.type.Money AmountIncludingGST = 4;
+        google.type.Money AmountGST = 5;
+        repeated GetPaymentScheduleByPolicyIdInstalmentLineItemResponse LineItems = 6;
+        google.protobuf.Timestamp AnniversaryDate = 7;
+        bool IsLumpSum = 8;
+
+        message GetPaymentScheduleByPolicyIdInstalmentLineItemResponse {
+            google.type.Money Amount = 1;
+            string Type = 2;
+        }
+    }
+}
+
+message AddCreditCardRequest {
+    string PaymentToken = 1;
+    int32 ChargifyCustomerId = 2;
+    string PolicyId = 3;
+}
+
+message AddCreditCardResponse {
+    int32 PaymentProfileId = 1;
+}
+
+message UpdateCreditCardExpiryAndRetryRequest {       
+    string PolicyId = 1;
+    int32 ExpirationMonth = 2;
+    int32 ExpirationYear = 3;
+}
+
+message GetSubscriptionByPolicyIdRequest {
+    string PolicyId = 1;
+}
+
+message GetSubscriptionByPolicyIdResponse {
+    SubscriptionDto Subscription = 1;
+}
+
+message GetMonthlyLumpSumRequest {
+    string PolicyId = 1;
+}
+
+message GetMonthlyLumpSumResponse {
+    string PolicyId = 1;
+    google.type.Money Amount = 2;
+    google.type.Money MonthlyInstalmentAmount = 3;
+    int32 RemainingInstalment = 4;
+    bool PaidAlready = 5;
+    string ErrorCode = 6;
+ }
+
+message PayLumpSumRequest {
+    string PolicyId = 1;
+    google.type.Money Amount = 2;
+}
+
+message PayLumpSumResponse {
+	string ErrorCode = 1;
+}
+
+message GetArrearsBreakdownByPolicyIdRequest {
+	string PolicyId = 1;
+}
+
+
+message GetArrearsBreakdownByPolicyIdResponse {        
+	repeated LineItemDto LineItems = 1;	
+	google.type.Money TotalArrearsAmount = 3;
+}
+

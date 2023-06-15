@@ -1,0 +1,48 @@
+syntax = "proto3";
+
+package Payment;
+
+option csharp_namespace = "BizCover.gRPC.Payment";
+
+import "Protos/google/type/money.proto";
+
+message PaymentDto {
+    string PaymentId = 1;
+    string OrderId = 2;
+    string PaymentToken = 3;
+    PaymentStatus Status = 4;
+    string Reason = 5;
+}
+
+enum PaymentStatus {
+    Pending = 0;
+    Accepted = 1;
+    Declined = 2;
+    Error = 3;
+}
+
+message SubscriptionDto {
+    string Id = 1;
+    string State = 2;
+    google.type.Money Balance = 3;
+    string PaymentType = 4;
+    string PolicyId = 5;
+    CreditCardDto CreditCard = 6;
+}
+
+message CreditCardDto {
+    string FirstName = 1;
+    string LastName = 2;
+    string MaskedCardNumber = 3;
+    string CardType = 4;
+    int32 ExpirationMonth = 5;
+    int32 ExpirationYear = 6;
+    bool Disabled = 7;
+    string PaymentProfileId = 8;
+
+}
+
+message LineItemDto {
+	google.type.Money Amount = 1;
+	string LineItemCode = 2;
+}

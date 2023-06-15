@@ -1,107 +1,106 @@
-# BizCover.Blaze.Infrastructure.Bus
+# BizCover.Api.Renewals
 
-A BizCover Library for MassTransit
+Renewal Service is responsible for renewing expiring policy. 
 
-## Usage
+### Renewal Service Use cases
+- **Add or Update Policy Renewal Details:** When we bind the policy we also add/update policy into renewal database with renewal details
+- **Initiate Renewal:** The policy renewal process in initiated 40* days prior to policy expiry date.
+- **Auto Renewal Order Generation:** Draft Auto renewal order is generated for policies 21* prior to expiry date.
+- **Auto Renewal Order Submission:** Auto renewal order is submitted 7* days prior to expiry date.
+- **Generate Renewal Order:** If Renewal eligibility criteria are met, Renewal order is generated for specific policy.
+- **Submit Renewal Order:** If Renewal eligibility criteria are met, Renewal order is submitted for specific policy.
+- **Set Policy As Renewed:** Consumes OrderCompletedEvent and RenewedPolicyId is recorded against the expiring policy.
+- **Update Auto Renewal Opt-in flag:** Update auto renewal opt in flag
+- **Update Auto Renewal Eligibility:** Update auto renewal eligibility for particular policy
+- **Update Auto Renewal Enable All Renewals:** Update all renewal enable flag
+- **Update Special Circumstances:** Update policy special circumstances flag
+- **Get Renewal Detail:** Return renewal detail by PolicyId
 
-In Startup.cs
-* For adding a bus if the solution has both Consumers and Publisher
-```cs
-     services.AddBlazeBus(Configuration,
+**Days are configured at product level**
 
-                subscriptions =>
-                {
-                    subscriptions.Subscribe<OrderEvent>();
-                },
+<hr/>
+<p align="center">
+  <img src="service-diagram.png">
+</p>
+<hr/>
 
-                (IReceiveEndpointConfigurator receiveEndpointConfigurator, IRegistration registration) =>
-                {
-                    receiveEndpointConfigurator.ConfigureConsumer<OrderEventConsumer>(registration);
-                },
+<hr/>
+<p align="center">
+  <img src="internal-design.png">
+</p>
+<hr/>
 
-                new Type[]
-                {
-                    typeof(OrderEventConsumer)
-                });
+### Renewal Entity
+
+```mermaid
+classDiagram
+      Renewal "1" --> "1" Renewaldates
+      Renewal "1" --> "1" AutoRenewalEligibility
+      Renewal "1" --> "1" SpecialCircumstances
+      Renewal "1" --> "1" AllRenewalsEnabled
+      class Renewal {
+          ExpiringPolicyId
+          ProductCode
+          PolicyStatus
+          OrderId
+          PolicyExpiryDate
+          PolicyInceptionDate
+          RenewalDates
+          AutoRenewalEligibility
+          SpecialCircumstances
+          AllRenewalsEnabled
+          OptIn
+          HasArrears,
+          RenewalType,
+          RenewedPolicyId,
+          RenewedDate
+      }
+      class Renewaldates{
+          Initiation
+          Initiated
+          OrderGeneration
+          OrderGenerated
+          OrderSubmission
+          OrderSubmitted
+      }
+      class AutoRenewalEligibility{
+          IsEligible
+          Comments
+          UpdatedAt
+      }
+      class SpecialCircumstances{
+          IsEligible
+          Comments
+          UpdatedAt
+          Reason
+          SecondLevelReason
+      }
+      class AllRenewalsEnabled{
+          IsEligible
+          Comments
+          UpdatedAt
+      }
 ```
-* If solution has only publisher
-```cs
-    services.AddBlazeBus(Configuration, null, null);
+## Component tests 
+
+### Set nuget credentials
+Ensure GH_PKGS_TOKEN and use GH_USER are in the host environment 
 ```
-
-* Add the following to your appsettings.json while teting with localstack.
-```json
- "AWS": {
-    "Region": "ap-southeast-2",
-    "ServiceURL": "http://localhost:4566",
-  },
-  "BLAZE_REGION": "au",
-  "BLAZE_ENVIRONMENT": "dev",
-  "BLAZE_SERVICE": "consumer" // used in queue name only
+EXPORT GH_USER=username_here
+EXPORT GH_PKGS_TOKEN=ghp_XYZ
 ```
-* Do not add `ServiceURL` in your appsettings.json while deloying to actual environment.
-```json
- "AWS": {
-    "Region": "ap-southeast-2",
-  },
-  "BLAZE_REGION": "au",
-  "BLAZE_ENVIRONMENT": "dev",
-  "BLAZE_SERVICE": "consumer" // used in queue name only
+Use `SET` instead of `EXPORT` if not available ( for Linux use export)
+You can set these permanently via SETX ( or bashrc)
+
+### Run component tests infrastructure
 ```
-### Send Command
-This library already injects a resolver called `IResolverEndpoint`. It has two methods
- - Uri ResolveDefaultEndpoint(string serviceName)
- - Uri ResolveDefaultEndpointForSelf()
- if consumer wants to supply a servicename (queuename) use `ResolveDefaultEndpoint` it automatically forms a uri like `amazonsqs://ap-southeast-2/au-dev-blaze-{serviceName}` based on `BLAZE_REGION` , `BLAZE_ENVIRONMENT` and string `blaze`
- if consumer wants to get the serivce QueueName please use `ResolveDefaultEndpointForSelf` method and this method automatically forms a uri like `amazonsqs://ap-southeast-2/au-dev-blaze-consumer` based on `BLAZE_REGION` , `BLAZE_ENVIRONMENT` , string `blaze` and `BLAZE_SERVICE`
+docker-compose -f docker-compose-component.yml up     
+```
+remember  "-d" for dettach/ background --build  to force a rebuild 
+If your running detached wait the run the following (or run in another window )
 
-To consumer `IResolverEndpoint` inject this to constructor and call the desired method to get the endpoint URI.
- 
-### TopicName Convention
-if message namespace starts with `BizCover.Messages.` eg: `BizCover.Messages.Order` the topic name will be picked as `BLAZE_ENVIRONMET-BLAZE_REGION-blaze-order-orderevent`
-if message namespace does not starts with `BizCover.Messages.` eg: `samples.Order` then topic name will be `BLAZE_ENVIRONMET-BLAZE_REGION-blaze-orderevent`
-Fault topic will have `-fault` at the end.
-
-### QueueName Convention
-QueueName will be `BLAZE_ENVIRONMET-BLAZE_REGION-blaze-BLAZE_SERVICE`
-Error queue will have `_error` at the end
-Skipped queue will have `_skip` at the end
-
-### HealthCheck
-Add following in `Startup.ConfigureService` method
-
-services.Configure<HealthCheckPublisherOptions>(options =>
-            {
-                options.Delay = TimeSpan.FromSeconds(2);
-                options.Predicate = (check) => check.Tags.Contains("blazebus");
-            });
-
-and in `Startup.Configure` method
-
-app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapHealthChecks("/health/ready", new HealthCheckOptions()
-                {
-                    Predicate = (check) => check.Tags.Contains("blazebus"),
-                });
-            });
-### To run sample application
- - make Multiple startup in this solution
-  - BizCover.Blaze.Infrastructure.Bus.Sample.Consumer
-  - BizCover.Blaze.Infrastructure.Bus.Sample.Publisher
- - in `Consumer` launchsettings.json 
-  -  "applicationUrl": "https://localhost:5002;http://localhost:5003"
- - in `Publisher` launchsetings.json
-  - "applicationUrl": "https://localhost:5001;http://localhost:5000"
- - To publish message - POST method
-  - http://localhost:5000/BusPublisher/publish
-   - body as 
-   `{
-          "ProductName":"abce",
-          "OrderId":"123"
-    }`
-- to check consumer - GET method
- - http://localhost:5003/busreceiver/get/123 
- 
-**Note: Make sure no Environment Variable `AWS_PROFILE` is added in local machine. If its already there do remove and restart your VisualStudio.**
- 
+### Run the component tests
+```
+dotnet test  tests/tests\BizCover.Api.Renewals.ComponentTests
+```
+Can also run from visual studio. 

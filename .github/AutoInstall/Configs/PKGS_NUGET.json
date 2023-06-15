@@ -1,0 +1,8 @@
+{
+  "default_version": "1.0",
+  "on_push": "true",
+  "runner_label": "bizcover-shared",
+  "projects": "src/BizCover.Protos.Renewals/BizCover.Protos.Renewals.csproj src/BizCover.Messages.Renewals/BizCover.Messages.Renewals.csproj",
+  "build_all": "false",
+  "pre_push_script_path": "pre-push.sh"
+}

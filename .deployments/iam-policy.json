@@ -1,0 +1,90 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sns:ListTagsForResource",
+                "sns:ListSubscriptionsByTopic",
+                "sns:Publish",
+                "sns:GetTopicAttributes",
+                "sns:CreateTopic",
+                "sns:ConfirmSubscription",
+                "sns:SetSubscriptionAttributes",
+                "sns:SetTopicAttributes"
+            ],
+          "Resource": [
+            "arn:aws:sns:*:*:*-blaze-Policies-PolicyBoundEvent",
+            "arn:aws:sns:*:*:*-blaze-Policies-PolicyBoundEvent*",
+            "arn:aws:sns:*:*:*-blaze-Orders-OrderCompletedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Policies-PolicyStatusChangedEvent",
+            "arn:aws:sns:*:*:*-blaze-Policies-PolicyStatusChangedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Scheduler-StatusChange",
+            "arn:aws:sns:*:*:*-blaze-Scheduler-StatusChange*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-*Command*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-RenewalInitializedEvent",
+            "arn:aws:sns:*:*:*-blaze-Renewals-RenewalInitializedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-PolicyRenewedEvent",
+            "arn:aws:sns:*:*:*-blaze-Renewals-PolicyRenewedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-RenewalOrderGeneratedEvent",
+            "arn:aws:sns:*:*:*-blaze-Renewals-RenewalOrderGeneratedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-DueForRenewalEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-SpecialCircumstancesUpdatedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-AutoRenewalOptInFlagUpdatedEvent*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-SubmitRenewalOrderCommand",
+            "arn:aws:sns:*:*:*-blaze-Renewals-SubmitRenewalOrderCommand*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-GenerateRenewalOrderCommand",
+            "arn:aws:sns:*:*:*-blaze-Renewals-GenerateRenewalOrderCommand*",
+            "arn:aws:sns:*:*:*-blaze-Renewals-AutoRenewalPendingPaymentCreatedEvent*"
+          ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sns:ListEndpointsByPlatformApplication",
+                "sns:ListPhoneNumbersOptedOut",
+                "sns:GetEndpointAttributes",
+                "sns:GetPlatformApplicationAttributes",
+                "sns:ListTopics",
+                "sns:GetSubscriptionAttributes",
+                "sns:ListSubscriptions",
+                "sns:CheckIfPhoneNumberIsOptedOut",
+                "sns:GetSMSAttributes",
+                "sns:ListPlatformApplications",
+                "sns:Subscribe"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "sqs:DeleteMessage",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues",
+                "sqs:ChangeMessageVisibility",
+                "sqs:UntagQueue",
+                "sqs:ReceiveMessage",
+                "sqs:SendMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:ListQueueTags",
+                "sqs:TagQueue",
+                "sqs:RemovePermission",
+                "sqs:ListDeadLetterSourceQueues",
+                "sqs:AddPermission",
+                "sqs:PurgeQueue",
+                "sqs:DeleteQueue",
+                "sqs:CreateQueue",
+                "sqs:SetQueueAttributes"
+            ],
+            "Resource": [
+                "arn:aws:sqs:*:*:*-blaze-renewals",
+                "arn:aws:sqs:*:*:*-blaze-renewals*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": "sqs:ListQueues",
+            "Resource": "*"
+        }
+    ]
+}

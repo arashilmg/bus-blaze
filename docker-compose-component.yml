@@ -1,0 +1,154 @@
+version: "3.4"
+services:
+  tests:
+    image: bizcover.api.renewals.component-tests
+    build:
+      context: .
+      target: tests
+      args:
+      - GH_USER
+      - GH_PKGS_TOKEN
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - SvcHttpUrl=http://svc:8230/
+      - SvcGrpcUrl=http://svc:8231/
+      - AWS:ServiceURL=http://localstack:4566
+    entrypoint:
+      - dotnet
+      - test
+      - -c=Release
+      - --no-build
+      - --filter=Type=Component
+      - --verbosity=normal
+    depends_on:
+      svc:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  svc:
+    image: bizcover.api.renewals
+    build:
+      context: .
+      target: final
+      args:
+      - GH_USER
+      - GH_PKGS_TOKEN
+    ports:
+      - "8230:8230"
+      - "8231:8231"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ENVIRONMENT=Local
+      - AWS_ACCESS_KEY_ID=MOCK
+      - AWS_SECRET_ACCESS_KEY=MOCK
+      - AWS:REGION=ap-southeast-2
+      - AWS:ServiceURL=http://localstack:4566
+      - MongoOptions:Url=mongodb://mongo:27017
+      - Logging__LogLevel__Microsoft=Information
+      - HTTP_PORT=8230
+      - GRPC_PORT=8231 
+      - SERVICE:OFFERS:HTTP:HOST=offers-fake-svc
+      - SERVICE:OFFERS:GRPC:HOST=offers-fake-svc
+      - SERVICE:OFFERS:HTTP:PORT=8050
+      - SERVICE:OFFERS:GRPC:PORT=8051
+      - SERVICE:PAYMENT:HTTP:HOST=payment-fake-svc
+      - SERVICE:PAYMENT:GRPC:HOST=payment-fake-svc
+      - SERVICE:PAYMENT:HTTP:PORT=8130
+      - SERVICE:PAYMENT:GRPC:PORT=8131
+      - SERVICE:POLICIES:HTTP:HOST=policies-fake-svc
+      - SERVICE:POLICIES:GRPC:HOST=policies-fake-svc
+      - SERVICE:POLICIES:HTTP:PORT=8100
+      - SERVICE:POLICIES:GRPC:PORT=8101
+    healthcheck:
+      test: sleep 10 && echo 'ok'
+      start_period: 30s
+    depends_on:
+      offers-fake-svc:
+        condition: service_healthy    
+      localstack:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+
+  offers-fake-svc:
+    image: bizcover.api.offers-fake
+    build:
+      context: .
+      dockerfile: ./tests/BizCover.Api.OffersFake/Dockerfile
+      target: final
+      args:
+      - GH_USER
+      - GH_PKGS_TOKEN
+    ports:
+      - "8050:8050"
+      - "8051:8051"
+    healthcheck:
+      test: echo 'ok'
+      start_period: 10s
+
+  payment-fake-svc:
+    image: bizcover.api.payment-fake
+    build:
+      context: .
+      dockerfile: ./tests/BizCover.Api.PaymentFake/Dockerfile
+      target: final
+      args:
+      - GH_USER
+      - GH_PKGS_TOKEN
+    ports:
+      - "8130:8130"
+      - "8131:8131"
+    healthcheck:
+      test: echo 'ok'
+      start_period: 10s
+
+  policies-fake-svc:
+    image: bizcover.api.policies-fake
+    build:
+      context: .
+      dockerfile: ./tests/BizCover.Api.PoliciesFake/Dockerfile
+      target: final
+      args:
+      - GH_USER
+      - GH_PKGS_TOKEN
+    ports:
+      - "8100:8100"
+      - "8101:8101"
+    healthcheck:
+      test: echo 'ok'
+      start_period: 10s
+
+  localstack:
+    image: localstack/localstack:0.11.2
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=ap-southeast-2
+      - HOSTNAME_EXTERNAL=localstack
+      - DEBUG=0
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - awslocal sqs list-queues
+          && awslocal sns list-topics
+          && awslocal sns list-subscriptions
+      start_period: 10s
+
+  
+
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"    
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh mongo:27017/test --quiet
+      start_period: 20s
+      interval: 10s
+      timeout: 10s
+      retries: 5

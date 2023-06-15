@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package Policies;
+
+option csharp_namespace = "BizCover.Application.Policies";
+
+import "Protos/google/type/money.proto";
+import "Protos/google/protobuf/timestamp.proto";
+
+message PolicyDto {
+    string PolicyId = 1;
+    string PolicyNumber = 2;
+    string ProductCode = 3;
+    repeated SectionDto Sections = 4;
+    LegalRepresentativeDto LegalRepresentative = 5;
+    repeated InsuredEntityDto InsuredEntities = 6;
+    repeated ParameterDto Parameters = 7;
+    repeated EndorsementDto Endorsements = 8;
+    google.protobuf.Timestamp ExpiryDate = 9;
+    google.protobuf.Timestamp PolicyBoundDate = 10;
+    google.protobuf.Timestamp InceptionDate = 11;
+    string ContactId = 12;
+    string QuotationId = 13;
+    string OrderId = 14;
+    int32 OfferCode = 15;
+    string Status = 16;
+    string InsurerCode = 17;
+    string PaymentFrequency = 18;
+    string PaymentMethod = 19;
+    string ProductTypeCode = 20;
+    google.protobuf.Timestamp AmendmentEffectiveDateTime = 21;
+    google.type.Money TotalPremium = 22;  
+    IndustryDto Industry = 23;
+    bool IsRetroactiveDateApplicable = 24;
+    google.protobuf.Timestamp RetroactiveDate = 25;
+}
+
+message IndustryDto {
+    string Code = 1;
+    string Name = 2;
+}
+
+message SectionDto {
+    string SectionCode = 1;
+    repeated SectionCoverageDto Coverages= 3;
+}
+
+message SectionCoverageDto
+{
+    string Code = 1;
+    string Type = 2;
+    string Cover = 3;
+    string Excess = 4;
+    string AdditionalCover = 5;
+    string AdditionalExcess = 6;
+    string Reinstatement = 7;
+}
+
+message LegalRepresentativeDto {
+    string FirstName = 1;
+    string LastName = 2;
+    string Position = 3;
+}
+
+message InsuredEntityDto {
+    string InsuredEntityId = 1;
+    string BusinessName = 2;
+    string LegalEntityName = 3;
+    string ABN = 4;
+}
+
+// The parameter set used to generate the policy
+// These were typically gathered through the process of asking a user underwriting questions
+// however other sources are possible too such as Derived Parameters etc.
+message ParameterDto {
+    // example: SicknessCover
+    string Code = 1;
+    // example: TRUE
+    string Value = 2;
+    // example: Would you like to add Sickness cover?
+    string QuestionText = 3;
+    // example: Yes
+    string AnswerText = 4;
+    int32 Order = 5;
+}
+
+message EndorsementDto {
+    // Redunant text field has been replaced with title and body.
+    string Text = 1;
+    string Title = 2;
+    string Body = 3;
+}
+

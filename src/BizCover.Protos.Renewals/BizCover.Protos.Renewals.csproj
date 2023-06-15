@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <Company>BizCover</Company>
+        <Authors>BizCover</Authors>
+        <Description>GRPC Protos for Renewals Service</Description>
+        <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+        <PackageId>BizCover.Protos.Renewals</PackageId>
+        <RepositoryUrl>https://github.com/BizCover/BizCover.Api.Renewals</RepositoryUrl>
+        <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <RootNamespace>BizCover.Protos.Renewals</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+      	<Content Include="..\..\protos\*.proto" PackagePath="content" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="..\..\protos\google\type\*.proto" PackagePath="content\google\type" />
+    </ItemGroup>
+	
+    <ItemGroup>
+      	<Content Remove="..\..\protos\diagnostics.proto" />
+    </ItemGroup>
+
+</Project>

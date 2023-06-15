@@ -1,0 +1,4 @@
+{
+  "cron": "12 12 * * *",
+  "remove_older_than": "8 hours"
+}

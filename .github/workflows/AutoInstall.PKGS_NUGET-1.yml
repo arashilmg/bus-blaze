@@ -1,0 +1,62 @@
+# ---------------------------------------------------------------------------- #
+#           🚫✋ This Workflow is AutoInstalled - Don't edit manually          #
+# ---------------------------------------------------------------------------- #
+name: Package Nuget
+
+on:
+  repository_dispatch:
+    types: [pkgs-nuget]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Package Version (default auto-gen)'
+        required: false
+        default: ''
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '.github/workflows/**'
+      - '.github/AutoInstall/CheckSums/**'
+
+env:
+  GH_USER: ${{ secrets.GH_USER }}@bizcover.com.au
+  GH_PKGS_TOKEN: ${{ secrets.GH_PKGS_TOKEN }}
+
+jobs:
+  Github_Package:
+    runs-on: bizcover-shared
+    timeout-minutes: 10
+    steps:
+      - name: Checkout 
+        uses: actions/checkout@v2
+      - name: Get Bizcover Actions
+        uses: actions/checkout@v2
+        with:
+          repository: BizCover/BizCover.DevOps.Actions
+          token: ${{ secrets.GH_TOKEN }}
+          path: bizcover
+
+      - name: Pre Push
+        run: bizcover/scripts/build/pkgs-nuget-pre-push.sh
+
+      - name: Pack and Push
+        run: bizcover/scripts/build/pkgs-nuget.sh
+
+  Logs:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: Github_Package
+    timeout-minutes: 5
+    steps:
+      - name: Get Bizcover Actions
+        uses: actions/checkout@v2
+        with:
+          repository: BizCover/BizCover.DevOps.Actions
+          token: ${{ secrets.GH_TOKEN }}
+          path: bizcover
+
+      - name: Trigger Log Collector
+        run: bizcover/scripts/common/log-collector.sh
+        env:
+          LOG_COLLECTOR_KEY: ${{ secrets.LOG_COLLECTOR_KEY }}

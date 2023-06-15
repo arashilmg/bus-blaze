@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BizCover.Blaze.Infrastructure.Bus" Version="1.0.128" />
+    <PackageReference Include="BizCover.Messages.Orders" Version="1.2.2290" />
+    <PackageReference Include="BizCover.Messages.Policies" Version="1.2.2233" />
+    <PackageReference Include="BizCover.Messages.Scheduler" Version="1.0.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BizCover.Application.Renewals\BizCover.Application.Renewals.csproj" />
+    <ProjectReference Include="..\BizCover.Messages.Renewals\BizCover.Messages.Renewals.csproj" />
+  </ItemGroup>
+
+</Project>

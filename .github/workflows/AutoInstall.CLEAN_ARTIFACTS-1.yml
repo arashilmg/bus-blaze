@@ -1,0 +1,27 @@
+# ---------------------------------------------------------------------------- #
+#           🚫✋ This Workflow is AutoInstalled - Don't edit manually          #
+# ---------------------------------------------------------------------------- #
+name: Clean Artifacts
+
+on:
+  schedule:
+    - cron: "12 12 * * *"
+
+jobs:
+  remove-old-artifacts-gt-2hrs:
+    runs-on: bizcover-shared
+    timeout-minutes: 10
+
+    steps:
+    - name: Get Bizcover Actions
+      uses: actions/checkout@v2
+      with:
+        repository: BizCover/BizCover.DevOps.Actions
+        token: ${{ secrets.GH_TOKEN }}
+        path: bizcover
+    - name: Remove old artifacts
+      uses: ./bizcover/actions/gha-remove-artifacts
+      with:
+        age: "8 hours"
+        # skip-tags: true
+        skip-recent: 1

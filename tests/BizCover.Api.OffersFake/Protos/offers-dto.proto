@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package Offers;
+
+option csharp_namespace = "BizCover.Application.Offers";
+
+import "Protos/google/type/money.proto";
+import "Protos/google/protobuf/timestamp.proto";
+
+enum OfferType {
+    New = 0;
+    Amendment = 1;
+    Renewal = 2;
+}
+
+message IndicativeOfferDto {
+    // The product types that form the offer
+    repeated OfferProductTypeDto ProductTypes = 1;
+}
+
+message OfferDto {
+    // The primary identifier of an offer, used for later retrieving the offer
+    string OfferId = 1;
+
+    // When the offer expires, typically a month after generation
+    google.protobuf.Timestamp ExpiryDate = 2;
+
+    // The product types that form the offer
+    repeated OfferProductTypeDto ProductTypes = 3;
+
+    // When a product on this offer has been purchased then the offer will be sold
+    bool Sold = 4;
+
+    // Whether this offer has expired
+    bool Expired = 5;
+
+    // Associated contactId
+    string ContactId = 6;
+
+    //Unique user friendly number
+    int32 Code = 7;
+
+    OfferType OfferType = 8;
+
+    string ExpiringPolicyId = 9;
+}
+
+message OfferProductTypeDto {
+    // The product type of the products on offer
+    // example: PA
+    string ProductTypeCode = 1;
+
+    // Products of type PA that are on offer
+    repeated OfferQuotationDto Quotations = 2;
+
+    // Products of type PA that are NOT on offer
+    repeated OfferReferralDto Referrals = 3;
+
+    // The parameters used when generating these product offers of this product type
+    map<string, string> Parameters = 4;
+
+    // Products of type PA that are NOT on offer due to internal exception
+    // i.e product not properly setup
+    repeated .Offers.OfferExceptionDto Exceptions = 5;
+}
+
+message OfferReferralDto {
+    // example: PA-DUAL
+    string ProductCode = 1;
+
+    // Errors indicating the reason for why the product is not on offer
+    // Typically these are due to referrals occuring
+    // Examples
+    // - Age too old to offer
+    // - A mandatory Section is not available
+    // - A product cannot be rated.
+    repeated string Errors = 2;
+
+    repeated OfferReferralDetailsDto Referrals = 3;
+}
+
+message OfferReferralDetailsDto {
+    string ReferralRuleCode = 1;
+    repeated OfferReferralDetailsMessageParameterDto MessageParameters = 2;
+}
+
+message OfferReferralDetailsMessageParameterDto {
+    string Key = 1;
+    string Value = 2;
+    string ParameterCode = 3;
+}
+
+message OfferExceptionDto {
+    // example: PA-DUAL
+    string ProductCode = 1;
+    // configuration issue
+    string Error = 2;
+}
+
+message OfferQuotationDto {
+    // The id of the quotation in the quotations service
+    string QuotationId = 1;
+
+    // example: PA-DUAL
+    string ProductCode = 2;
+
+    google.type.Money TotalPremium = 3;
+
+    google.type.Money TotalMonthlyPremium = 4;
+
+}
+
+message ParameterSet {
+    // The product type to be rated and quoted (PA / PI-PL etc)
+    string ProductTypeCode = 1;
+    // The parameters relevant to the Product Type (COUNTRY_CODE / DEATH_COVER etc)
+    map<string, string> Parameters = 2;
+}
+
+message ComparisonParametersDto {
+    repeated ComparisonParameterDto Parameters = 1;
+}
+
+message ComparisonParameterDto {
+    // Parameter code (e.g. InceptionDate)
+    string Code = 1;
+    ComparisonResultDto Comparison = 2;
+}
+
+message ComparisonResultDto {
+    enum ComparisonStatus {
+        IDENTICAL = 0;
+        UPDATED = 1;
+        ADDED = 2;
+        REMOVED = 3;
+    }
+    ComparisonStatus Status = 1;
+    repeated ComparisonResultOfferDto Offers = 2;
+}
+
+message ComparisonResultOfferDto {
+    string OfferId = 1;
+    //The parameter value (e.g. '24/05/2021 4:00:00 pm')
+    string Value = 2;
+}

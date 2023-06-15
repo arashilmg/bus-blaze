@@ -1,0 +1,15 @@
+{
+  "auto_deploy_labels": "DEPLOY-TO-DEV-AU",
+  "auto_close_issues": "false",
+  "runner_label": "bizcover-terragrunt",
+  "predeploy_script": "bizcover/scripts/deploy/pre-deploy.sh",
+  "init_script": "bizcover/scripts/deploy/init.sh ${{ secrets.SLS_TF_API_KEY }}",
+  "check_script": "bizcover/scripts/deploy/check.sh ${{ secrets.SLS_TF_API_KEY }}",
+  "sit_script_path": "sit.sh",
+  "settings_path": ".deployments",
+  "show_req_body": "false",
+  "platform_type": "k8s",
+  "slack_channel": "team-bizvengers-bots",
+  "slack_on_success": "true",
+  "slack_namespace": ".*"
+}

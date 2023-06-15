@@ -1,0 +1,16 @@
+version: "3.4"
+
+services:
+  api:
+    image: ${DOCKER_IMAGE}:${DOCKER_IMAGE_TAG}
+    build:
+      context: .
+      args:
+        - BUILD_VERSION=${BUILD_VERSION-1.0.0}
+        - GH_USER
+        - GH_PKGS_TOKEN
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8230:5000"
+      - "8231:5001"

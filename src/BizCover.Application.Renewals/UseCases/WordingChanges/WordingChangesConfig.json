@@ -1,0 +1,13 @@
+{
+  "WordingChangesConfig": {
+    "Products": [
+      {
+        "ProductCode": "PI-PL-DUAL",
+        "Title": "USA and Canada Cover Notice for Auto-renewals",
+        "Url": "https://insure.bizcover.com.au/WebForms/Public/documents/USA%20and%20Canada%20Cover%20Notice%20for%20Auto-renewals%20-%20DUAL%20123%20Pitt%20Street.pdf",
+        "EffectiveFrom": "2022-01-11",
+        "EffectiveTo": ""
+      }
+    ]
+  }
+}

@@ -2,16 +2,25 @@ version: "3.4"
 
 services:
   tests:
+    image: bizcover.api.renewals.integration-tests
     build:
       context: .
       target: tests
       args:
+        - BUILD_VERSION=${BUILD_VERSION-1.0.0}
         - GH_USER
         - GH_PKGS_TOKEN
     environment:
-      - AWS:ServiceURL=http://bus:4566
-    depends_on:
-      - bus
+      - ASPNETCORE_ENVIRONMENT=Development
+      - AWS_ACCESS_KEY_ID=MOCK
+      - AWS_SECRET_ACCESS_KEY=MOCK
+      - AWS:REGION=ap-southeast-2
+      - AWS:ServiceURL=http://localstack:4566      
+      - MongoOptions:Url=mongodb://mongo:27017/
+      - MongoOptions:DatabaseName=renewals
+      - BLAZE_REGION=au
+      - BLAZE_ENVIRONMENT=local
+      - BLAZE_SERVICE=renewals
     entrypoint:
       - dotnet
       - test
@@ -19,11 +28,36 @@ services:
       - --no-build
       - --filter=Type=Integration
       - --verbosity=normal
-  bus:
-    image: localstack/localstack:0.11.2
+    depends_on:
+      - localstack
+      - mongo
+
+  mongo:
+    image: mongo
     environment:
       - DEBUG=1
-      - SERVICES=sqs,sns
-      - DEFAULT_REGION=ap-southeast-2
+      - MONGO_REPLICA_HOST=host.docker.internal
+      - MONGO_REPLICA_PORT=27018
+    ports:
+      - "27017:27017"
+
+  localstack:
+    image: localstack/localstack:0.14.2
     ports:
       - "4566:4566"
+    environment:
+      - SERVICES=sqs,sns
+      - DEFAULT_REGION=ap-southeast-2
+      - HOSTNAME_EXTERNAL=localhost
+      - DEBUG=0
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - awslocal sqs list-queues
+          && awslocal sns list-topics
+          && awslocal sns list-subscriptions
+      interval: 5s
+      timeout: 10s
+      start_period: 10s

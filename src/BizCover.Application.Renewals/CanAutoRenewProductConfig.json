@@ -1,0 +1,54 @@
+{
+  "CanAutoRenewProductConfig": {
+    "Products": [
+      {
+        "ProductCode": "PI-PL-AIG",
+        "CanAutoRenew": true,
+        "EffectiveFrom": "2021-06-23",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PI-PL-VERO",
+        "CanAutoRenew": true,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PI-PL-DUAL",
+        "CanAutoRenew": true,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-DUAL",
+        "CanAutoRenew": false,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-POINT",
+        "CanAutoRenew": false,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-QBE",
+        "CanAutoRenew": false,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "CYBER-AIG",
+        "CanAutoRenew": true,
+        "EffectiveFrom": "2023-03-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "CYBER-DUAL",
+        "CanAutoRenew": true,
+        "EffectiveFrom": "2023-03-01",
+        "EffectiveTo": ""
+      }
+    ]
+  }
+}

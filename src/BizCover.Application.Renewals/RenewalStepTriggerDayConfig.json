@@ -1,0 +1,70 @@
+{
+  "RenewalStepTriggerDayConfig": {
+    "Products": [
+      {
+        "ProductCode": "PI-PL-AIG",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-06-23",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PI-PL-VERO",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PI-PL-DUAL",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-DUAL",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-POINT",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "PA-QBE",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2021-02-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "CYBER-AIG",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2023-03-01",
+        "EffectiveTo": ""
+      },
+      {
+        "ProductCode": "CYBER-DUAL",
+        "Initiation": 40,
+        "OrderGeneration": 21,
+        "OrderSubmission": 7,
+        "EffectiveFrom": "2023-03-01",
+        "EffectiveTo": ""
+      }
+    ]
+  }
+}
